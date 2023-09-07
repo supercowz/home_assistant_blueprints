@@ -1,8 +1,8 @@
 blueprint:
-  name: Motion-activated Light w/ Scenes
-  description: Turn on a specific scene depending on the time when motion is detected.
+  name: Motion-activated Light w/ Scenes Day/Night
+  description: Turn on a specific scene depending on the status of the sun when motion is detected
   domain: automation
-  #source_url: https://github.com/home-assistant/core/blob/dev/homeassistant/components/automation/blueprints/motion_light.yaml
+  source_url: https://github.com/supercowz/home_assistant_blueprints/blob/main/motion_light_scenes_with_sun.yaml
   author: Chris Bednar
   input:
     motion_entity:
@@ -11,8 +11,14 @@ blueprint:
         entity:
           domain: binary_sensor
           device_class: motion
-    scene_active:
-      name: Active Scene
+    day_scene:
+      name: Active Day Scene
+      selector:
+        target:
+          entity:
+            domain: scene
+    night_scene:
+      name: Active Night Scene
       selector:
         target:
           entity:
@@ -23,20 +29,6 @@ blueprint:
         target:
           entity:
             domain: scene
-    before_sun:
-      name: Before
-      selector:
-        select:
-          options:
-            - sunrise
-            - sunset
-    after_sun:
-      name: After
-      selector:
-        select:
-          options:
-            - sunrise
-            - sunset
     no_motion_wait:
       name: Wait time
       description: Time to leave the light on after last motion is detected.
@@ -58,15 +50,20 @@ trigger:
   from: "off"
   to: "on"
 
-condition:
-  - condition: sun
-    after: !input after_sun
-    before: !input before_sun
-
 action:
-  - alias: "Activate the active scene"
-    service: scene.turn_on
-    target: !input scene_active
+  - choose:
+      - conditions:
+          - condition: sun
+            before: sunrise
+            after: sunset
+        sequence:
+          - alias: "Activate the night scene"
+            service: scene.turn_on
+            target: !input night_scene
+    default:
+      - alias: "Activate the day scene"
+        service: scene.turn_on
+        target: !input day_scene
   - alias: "Wait until there is no motion from device"
     wait_for_trigger:
       platform: state
