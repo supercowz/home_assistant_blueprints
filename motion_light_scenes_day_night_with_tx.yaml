@@ -57,9 +57,23 @@ trigger:
   to: "on"
 
 condition:
-  - condition: state
-    entity_id: !input media_player
-    state: "off"
+  - condition: or
+    conditions:
+      - condition: state
+        entity_id: !input media_player
+        state: "off"
+      - condition: state
+        entity_id: !input media_player
+        state: "idle"
+      - condition: state
+        entity_id: !input media_player
+        state: "unknown"
+      - condition: state
+        entity_id: !input media_player
+        state: "standby"
+      - condition: state
+        entity_id: !input media_player
+        state: "unavailable""
 
 action:
   - choose:
