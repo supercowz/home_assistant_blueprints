@@ -1,0 +1,88 @@
+blueprint:
+  name: Motion-activated Light w/ Scenes Day/Night
+  description: Turn on a specific scene depending on the status of the sun when motion is detected
+  domain: automation
+  source_url: https://github.com/supercowz/home_assistant_blueprints/blob/main/motion_light_scenes_day_night.yaml
+  author: Chris Bednar
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    day_scene:
+      name: Active Day Scene
+      selector:
+        target:
+          entity:
+            domain: scene
+    night_scene:
+      name: Active Night Scene
+      selector:
+        target:
+          entity:
+            domain: scene
+    scene_inactive:
+      name: Inactive Scene
+      selector:
+        target:
+          entity:
+            domain: scene
+    media_player:
+      name: Media Player
+      selector:
+        target:
+          entity:
+            domain: media_player
+    no_motion_wait:
+      name: Wait time
+      description: Time to leave the light on after last motion is detected.
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+    
+# If motion is detected within the delay,
+# we restart the script.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  platform: state
+  entity_id: !input motion_entity
+  from: "off"
+  to: "on"
+
+condition:
+  - condition: state
+    entity_id: !input media_player
+    state: "off"
+
+action:
+  - choose:
+      - conditions:
+          - condition: sun
+            before: sunrise
+            after: sunset
+        sequence:
+          - alias: "Activate the night scene"
+            service: scene.turn_on
+            target: !input night_scene
+    default:
+      - alias: "Activate the day scene"
+        service: scene.turn_on
+        target: !input day_scene
+  - alias: "Wait until there is no motion from device"
+    wait_for_trigger:
+      platform: state
+      entity_id: !input motion_entity
+      from: "on"
+      to: "off"
+  - alias: "Wait the number of seconds that has been set"
+    delay: !input no_motion_wait
+  - alias: "Activate the inactive scene"
+    service: scene.turn_on
+    target: !input scene_inactive
