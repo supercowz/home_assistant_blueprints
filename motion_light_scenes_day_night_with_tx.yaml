@@ -73,7 +73,7 @@ condition:
         state: "standby"
       - condition: state
         entity_id: !input media_player
-        state: "unavailable""
+        state: "unavailable"
 
 action:
   - choose:
