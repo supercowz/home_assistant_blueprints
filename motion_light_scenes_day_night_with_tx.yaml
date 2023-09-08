@@ -1,8 +1,8 @@
 blueprint:
-  name: Motion-activated Light w/ Scenes Day/Night
+  name: Motion-activated Light w/ Scenes Day/Night with TV
   description: Turn on a specific scene depending on the status of the sun when motion is detected
   domain: automation
-  source_url: https://github.com/supercowz/home_assistant_blueprints/blob/main/motion_light_scenes_day_night.yaml
+  source_url: https://github.com/supercowz/home_assistant_blueprints/blob/main/motion_light_scenes_day_night_with_tx.yaml
   author: Chris Bednar
   input:
     motion_entity:
